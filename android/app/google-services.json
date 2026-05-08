@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1063289157108",
+    "project_id": "newskhabarapp",
+    "storage_bucket": "newskhabarapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1063289157108:android:a52d2c0868e15fb08775a1",
+        "android_client_info": {
+          "package_name": "com.khabarnew"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEuLmKdl_73Qb5t3ODh3ODQgUU0Lr-5jo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
