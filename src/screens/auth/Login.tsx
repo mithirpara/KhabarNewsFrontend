@@ -15,8 +15,11 @@ import CheckBox from '../../component/CheckBox';
 import { setAuthUser } from '../../redux/Slices/authSlice';
 import { loginUser } from '../../services/authApi';
 import { saveAuthUser } from '../../services/authStorage';
+import { useAppTheme } from '../../hooks/useAppTheme';
+import { registerPushToken } from '../../services/pushNotificationService';
 
 const Login = (props: any) => {
+  const { colors } = useAppTheme();
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,6 +79,9 @@ const Login = (props: any) => {
 
       await saveAuthUser(authUser);
       dispatch(setAuthUser(authUser));
+      registerPushToken(authUser.userId).catch(error => {
+        console.log('Push token registration failed:', error?.message || error);
+      });
 
       props.navigation.reset({
         index: 0,
@@ -89,20 +95,20 @@ const Login = (props: any) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View>
-        <Text style={styles.title}>Hello</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Hello</Text>
         <Text style={styles.subtitle}>Again!</Text>
-        <Text style={styles.welcomeBack}>
+        <Text style={[styles.welcomeBack, { color: colors.mutedText }]}>
           Welcome back you've {'\n'}been missed!
         </Text>
 
         <View style={{ marginTop: 30 }}>
-          <Text>Username</Text>
+          <Text style={{ color: colors.text }}>Username</Text>
           <TextInput
-            style={styles.textinput}
+            style={[styles.textinput, { color: colors.text, borderColor: colors.inputBorder, backgroundColor: colors.surface }]}
             placeholder="Enter email"
-            placeholderTextColor={'#000'}
+            placeholderTextColor={colors.mutedText}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -110,12 +116,12 @@ const Login = (props: any) => {
           />
           <Text style={{ color: '#C30052', fontSize: 12 }}>{emailError}</Text>
           <View>
-            <Text style={{ marginTop: 15 }}>Password</Text>
-            <View style={styles.inputBox}>
+            <Text style={{ marginTop: 15, color: colors.text }}>Password</Text>
+            <View style={[styles.inputBox, { borderColor: colors.inputBorder, backgroundColor: colors.surface }]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="Enter password"
-                placeholderTextColor={'#000'}
+                placeholderTextColor={colors.mutedText}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!Show}
@@ -126,7 +132,7 @@ const Login = (props: any) => {
                 style={{ alignItems: 'center' }}
               >
                 <Image
-                  style={styles.eye}
+                  style={[styles.eye, { tintColor: colors.icon }]}
                   source={
                     Show
                       ? require('../../assets/png/visibility.png')
@@ -164,26 +170,26 @@ const Login = (props: any) => {
               )}
             </TouchableOpacity>
           </View>
-          <Text style={styles.orContinue}>or continue with</Text>
+          <Text style={[styles.orContinue, { color: colors.mutedText }]}>or continue with</Text>
           <View
             style={{ flexDirection: 'row', justifyContent: 'space-around' }}
           >
-            <TouchableOpacity style={styles.iconView}>
+            <TouchableOpacity style={[styles.iconView, { borderColor: colors.border }]}>
               <View style={styles.imageView}>
                 <Image
                   source={require('../../assets/png/Facebook.png')}
                   style={styles.imageStyle}
                 />
-                <Text style={styles.facebookText}>Facebook</Text>
+                <Text style={[styles.facebookText, { color: colors.mutedText }]}>Facebook</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconView}>
+            <TouchableOpacity style={[styles.iconView, { borderColor: colors.border }]}>
               <View style={styles.imageView}>
                 <Image
                   source={require('../../assets/png/google.png')}
                   style={styles.imageStyle}
                 />
-                <Text style={styles.googleText}>Google</Text>
+                <Text style={[styles.googleText, { color: colors.mutedText }]}>Google</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -194,7 +200,7 @@ const Login = (props: any) => {
               marginTop: 30,
             }}
           >
-            <Text style={styles.accountText}>don't have an account ?</Text>
+            <Text style={[styles.accountText, { color: colors.mutedText }]}>don't have an account ?</Text>
             <TouchableOpacity
               onPress={() => props.navigation.navigate('SignUpScreen')}
             >

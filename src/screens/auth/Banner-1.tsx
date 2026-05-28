@@ -8,6 +8,7 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 const { width } = Dimensions.get('window');
 
@@ -36,13 +37,14 @@ const SLIDES = [
   },
 ];
 
-const BannerScreen1 = ({ navigation }) => {
-  const flatListRef = useRef(null);
+const BannerScreen1 = ({ navigation }: any) => {
+  const { colors } = useAppTheme();
+  const flatListRef = useRef<any>(null);
   const [index, setIndex] = useState(0);
 
   const goNext = () => {
     if (index < SLIDES.length - 1) {
-      flatListRef.current.scrollToIndex({
+      flatListRef.current?.scrollToIndex({
         index: index + 1,
         animated: true,
       });
@@ -53,7 +55,7 @@ const BannerScreen1 = ({ navigation }) => {
 
   const goBack = () => {
     if (index > 0) {
-      flatListRef.current.scrollToIndex({
+      flatListRef.current?.scrollToIndex({
         index: index - 1,
         animated: true,
       });
@@ -61,7 +63,7 @@ const BannerScreen1 = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         ref={flatListRef}
         data={SLIDES}
@@ -81,8 +83,8 @@ const BannerScreen1 = ({ navigation }) => {
         renderItem={({ item }) => (
           <View style={styles.slide}>
             <Image source={item.image} style={styles.image} />
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.desc}>{item.description}</Text>
+            <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
+            <Text style={[styles.desc, { color: colors.mutedText }]}>{item.description}</Text>
           </View>
         )}
       />
@@ -100,7 +102,7 @@ const BannerScreen1 = ({ navigation }) => {
         <View style={styles.buttons}>
           {index > 0 ? (
             <TouchableOpacity onPress={goBack}>
-              <Text style={styles.back}>Back</Text>
+              <Text style={[styles.back, { color: colors.mutedText }]}>Back</Text>
             </TouchableOpacity>
           ) : (
             <View />

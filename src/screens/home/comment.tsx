@@ -6,17 +6,20 @@ import {
   FlatList,
   TouchableOpacity,
   TextInput,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { addComment, likeComment } from '../../redux/Slices/commentSlices';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getThemeColors } from '../../constants/theme';
 
-const CommentScreen = () => {
+const CommentScreen = (props: any) => {
   const [text, setText] = useState('');
-  const data = useSelector(state => state.comments.comments);
+  const data = useSelector((state: any) => state.comments.comments);
+  const themeMode = useSelector((state: any) => state.theme.mode);
+  const colors = getThemeColors(themeMode);
   const dispatch = useDispatch();
 
   const handleSend = () => {
@@ -37,7 +40,7 @@ const CommentScreen = () => {
     setText('');
   };
 
-  const renderReply = reply => (
+  const renderReply = (reply: any) => (
     <View
       key={reply.id}
       style={{ flexDirection: 'row', marginTop: 10, marginLeft: 55 }}
@@ -48,8 +51,8 @@ const CommentScreen = () => {
       />
 
       <View style={{ flex: 1 }}>
-        <Text style={{ fontWeight: '600' }}>{reply.name}</Text>
-        <Text style={{ color: '#333' }}>{reply.text}</Text>
+        <Text style={{ fontWeight: '600', color: colors.text }}>{reply.name}</Text>
+        <Text style={{ color: colors.text }}>{reply.text}</Text>
 
         <View style={{ flexDirection: 'row', marginTop: 5 }}>
           <Text style={styles.meta}>{reply.time}</Text>
@@ -60,7 +63,7 @@ const CommentScreen = () => {
     </View>
   );
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: any) => (
     <View style={{ flexDirection: 'row', paddingVertical: 12 }}>
       <Image
         source={{ uri: item.avatar }}
@@ -68,8 +71,8 @@ const CommentScreen = () => {
       />
 
       <View style={{ flex: 1 }}>
-        <Text style={{ fontWeight: '700' }}>{item.name}</Text>
-        <Text style={{ color: '#333' }}>{item.text}</Text>
+        <Text style={{ fontWeight: '700', color: colors.text }}>{item.name}</Text>
+        <Text style={{ color: colors.text }}>{item.text}</Text>
 
         <View style={{ flexDirection: 'row', marginTop: 5 }}>
           <Text style={styles.meta}>{item.time}</Text>
@@ -91,7 +94,7 @@ const CommentScreen = () => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -99,7 +102,9 @@ const CommentScreen = () => {
         <View
           style={{ flexDirection: 'row', alignItems: 'center', padding: 15 }}
         >
-          <Image source={require('../../assets/png/backAerro.png')} />
+          <TouchableOpacity onPress={() => props.navigation.goBack()}>
+            <Image source={require('../../assets/png/backAerro.png')} style={{ tintColor: colors.icon }} />
+          </TouchableOpacity>
 
           <Text
             style={{
@@ -107,6 +112,7 @@ const CommentScreen = () => {
               fontWeight: 'bold',
               textAlign: 'center',
               flex: 1,
+              color: colors.text,
             }}
           >
             Comment
@@ -125,13 +131,28 @@ const CommentScreen = () => {
             />
           </View>
           <View>
-            <View style={styles.inputBox}>
+            <View
+              style={[
+                styles.inputBox,
+                {
+                  backgroundColor: colors.background,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
               <TextInput
                 placeholder="Type your comment"
                 value={text}
                 onChangeText={setText}
                 placeholderTextColor={'#A0A3BD'}
-                style={styles.input}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.surface,
+                    color: colors.text,
+                    borderColor: colors.border,
+                  },
+                ]}
               />
               <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
                 <Image source={require('../../assets/png/sendIcon.png')} />
@@ -144,7 +165,7 @@ const CommentScreen = () => {
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   meta: {
     color: '#888',
     fontSize: 12,
@@ -188,6 +209,6 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
   },
-};
+});
 
 export default CommentScreen;

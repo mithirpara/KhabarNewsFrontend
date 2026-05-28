@@ -10,12 +10,20 @@ import DetailsScreen from '../screens/home/Details';
 import CommentScreen from '../screens/home/comment';
 import SettingScreen from '../screens/home/setting';
 import EditProfileScreen from '../screens/home/editProfile';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const Stack = createNativeStackNavigator();
 
 const HomeNavigation = () => {
+  const { colors } = useAppTheme();
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.background },
+      }}
+    >
       <Stack.Screen name="TabNavigation" component={TabNavigation} />
       <Stack.Screen name="TerndingScreen" component={TerndingScreen} />
       <Stack.Screen name="NotificationScreen" component={NotificationScreen} />

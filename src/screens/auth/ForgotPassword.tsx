@@ -1,39 +1,40 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 const ForgotPasswordScreen = (props:any) => {
-  const [selected, setSelected] = useState(null);
+  const { colors } = useAppTheme();
+  const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.mainView}>
         <Image
           source={require('../../assets/png/backAerro.png')}
           style={styles.image}
         />
 
-        <Text style={styles.title}>Forgot{'\n'}Password ?</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Forgot{'\n'}Password ?</Text>
 
-        <Text style={styles.subtitle}>
+        <Text style={[styles.subtitle, { color: colors.mutedText }]}>
           Don’t worry! it happens. Please select the{'\n'}email or number
           associated with your{'\n'}account.
         </Text>
 
         <TouchableOpacity
-          style={[styles.card, selected === 'email' && '']}
+          style={[styles.card, { backgroundColor: colors.surface }, selected === 'email' && '']}
           onPress={() => setSelected('email')}
         >
           <View style={styles.iconBox}>
             <Image
-              style={styles.icon}
               source={require('../../assets/png/email.png')}
             />
           </View>
 
           <View style={{ flex: 1 }}>
-            <Text style={styles.label}>via Email:</Text>
-            <Text style={styles.value}>example@youremail.com</Text>
+            <Text style={[styles.label, { color: colors.mutedText }]}>via Email:</Text>
+            <Text style={[styles.value, { color: colors.text }]}>example@youremail.com</Text>
           </View>
 
           <View style={styles.outerCircle}>
@@ -42,19 +43,18 @@ const ForgotPasswordScreen = (props:any) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, selected === 'sms' && '']}
+          style={[styles.card, { backgroundColor: colors.surface }, selected === 'sms' && '']}
           onPress={() => setSelected('sms')}
         >
           <View style={styles.iconBox}>
             <Image
-              style={styles.icon}
               source={require('../../assets/png/sms.png')}
             />
           </View>
 
           <View style={{ flex: 1 }}>
-            <Text style={styles.label}>via SMS:</Text>
-            <Text style={styles.value}>+62-8421-4512-2531</Text>
+            <Text style={[styles.label, { color: colors.mutedText }]}>via SMS:</Text>
+            <Text style={[styles.value, { color: colors.text }]}>+62-8421-4512-2531</Text>
           </View>
 
           <View style={styles.outerCircle}>

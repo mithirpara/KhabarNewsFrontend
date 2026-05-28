@@ -1,21 +1,30 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import HomeScreen from '../screens/home/home';
 import ExploreScreen from '../screens/home/Explore';
 import BookmarkScreen from '../screens/home/Bookmark';
 import ProfileScreen from '../screens/home/Profile';
+import { getThemeColors } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigation = () => {
+  const themeMode = useSelector((state: any) => state.theme.mode);
+  const colors = getThemeColors(themeMode);
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        sceneStyle: {
+          backgroundColor: colors.background,
+        },
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: colors.tabBar,
           height: 70,
+          borderTopColor: colors.border,
         },
       }}
     >
@@ -33,6 +42,7 @@ const TabNavigation = () => {
                 style={{
                   width: 25,
                   height: 25,
+                  tintColor: focused ? undefined : colors.icon,
                 }}
               />
               <Text
@@ -63,6 +73,7 @@ const TabNavigation = () => {
                 style={{
                   width: 25,
                   height: 25,
+                  tintColor: focused ? undefined : colors.icon,
                 }}
               />
               <Text
@@ -93,6 +104,7 @@ const TabNavigation = () => {
                 style={{
                   width: 25,
                   height: 25,
+                  tintColor: focused ? undefined : colors.icon,
                 }}
               />
               <Text
@@ -121,6 +133,7 @@ const TabNavigation = () => {
                 style={{
                   width: 25,
                   height: 25,
+                  tintColor: focused ? undefined : colors.icon,
                   
                 }}
               />

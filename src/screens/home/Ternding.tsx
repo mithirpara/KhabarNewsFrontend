@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { API_BASE_URL } from '../../config/api';
+import { useAppTheme } from '../../hooks/useAppTheme';
+import RemoteImage from '../../component/RemoteImage';
 
 const DATA = [
   {
@@ -37,14 +40,19 @@ const DATA = [
   },
 ];
 
+const newsImageFallback = require('../../assets/png/NewsImages.png');
+const logoImageFallback = require('../../assets/png/BCClogo.png');
+
+const getImageUri = (item: any) => item?.image || item?.imageUrl || item?.urlToImage || item?.image1 || '';
+const getLogoUri = (item: any) => item?.newsLogo || item?.newsLogoUrl || item?.image2 || '';
+
 const Trending = (props: any) => {
+  const { colors } = useAppTheme();
   const [trendingData, setTrendingData] = useState([]);
 
   const getTrendingNews = async () => {
     try {
-      const response = await fetch(
-        'http://192.168.1.71:5000/api/trending?limit=10',
-      );
+      const response = await fetch(`${API_BASE_URL}/api/trending?limit=10`);
       const json = await response.json();
 
       if (json.success) {
@@ -59,42 +67,52 @@ const Trending = (props: any) => {
     getTrendingNews();
   }, []);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+  const renderItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor: colors.background }]}
+      activeOpacity={0.85}
+      onPress={() =>
+        props.navigation.navigate('DetailsScreen', {
+          article: item,
+          articleId: item.articleId || item.id,
+        })
+      }
+    >
+      <RemoteImage uri={getImageUri(item)} fallbackSource={newsImageFallback} style={styles.image} />
 
       <View style={styles.content}>
-        <Text style={styles.category}>{item.category}</Text>
+        <Text style={[styles.category, { color: colors.mutedText }]}>{item.category}</Text>
 
-        <Text style={styles.title}>{item.title}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
 
         <View style={styles.bottomRow}>
-          <Image
-            source={{ uri: item.newsLogo }}
+          <RemoteImage
+            uri={getLogoUri(item)}
+            fallbackSource={logoImageFallback}
             style={{ width: 24, height: 24, borderRadius: 12 }}
           />
           <Text style={styles.source}>{item.source}</Text>
-          <Text style={styles.time}> ⏱ {item.time}</Text>
+          <Text style={[styles.time, { color: colors.mutedText }]}> ⏱ {item.time}</Text>
         </View>
       </View>
 
       <TouchableOpacity style={styles.menu}>
-        <Image source={require('../../assets/png/dots.png')} />
+        <Image source={require('../../assets/png/dots.png')} style={{ tintColor: colors.icon }} />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View>
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.background }]}>
           <TouchableOpacity onPress={() => props.navigation.goBack()}>
-            <Image source={require('../../assets/png/backAerro.png')} />
+            <Image source={require('../../assets/png/backAerro.png')} style={{ tintColor: colors.icon }} />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Trending</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Trending</Text>
 
-          <Image source={require('../../assets/png/menu.png')} />
+          <Image source={require('../../assets/png/menu.png')} style={{ tintColor: colors.icon }} />
         </View>
 
         <FlatList

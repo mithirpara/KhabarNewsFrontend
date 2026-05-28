@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, Text, View, StyleSheet, Image } from 'react-native';
+import { useAppTheme } from '../hooks/useAppTheme';
 
-const CheckBox = ({ checked, onPress, label }) => {
+const CheckBox = ({ checked, onPress, label }: any) => {
+  const { colors } = useAppTheme();
   const [isChecked, setIsChecked] = useState(true);
 
   return (
@@ -11,11 +13,11 @@ const CheckBox = ({ checked, onPress, label }) => {
         onPress={() => setIsChecked(!isChecked)}
         activeOpacity={0.7}
       >
-        <View style={[styles.checkbox, isChecked && styles.checkedBox]}>
+        <View style={[styles.checkbox, { borderColor: colors.mutedText }, isChecked && styles.checkedBox]}>
           {isChecked && <Text style={styles.tick}>✓</Text>}
         </View>
 
-        <Text style={styles.label}>Remember me </Text>
+        <Text style={[styles.label, { color: colors.text }]}>{label || 'Remember me'} </Text>
       </TouchableOpacity>
     </View>
   );

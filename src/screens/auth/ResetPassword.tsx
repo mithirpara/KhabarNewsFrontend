@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   StyleSheet,
   Text,
@@ -8,8 +10,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAppTheme } from '../../hooks/useAppTheme';
+import { resetPassword } from '../../services/authApi';
 
 const ResetPassword = (props: any) => {
+  const { colors } = useAppTheme();
   const [Show, setShow] = useState(false);
   const [show, setshow] = useState(false);
 
@@ -17,43 +22,68 @@ const ResetPassword = (props: any) => {
   const [newPassword, setNewPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [newPasswordError, setNewPasswordError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handelreset = () => {
+  const handelreset = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    let isValid = true;
+
     if (!password) {
       setPasswordError('Password is required');
+      isValid = false;
     } else if (password.length < 6) {
       setPasswordError('Password must be at least 6 characters long');
+      isValid = false;
     } else {
       setPasswordError('');
     }
 
     if (!newPassword) {
       setNewPasswordError('Confirm Password is required');
+      isValid = false;
     } else if (password !== newPassword) {
       setNewPasswordError('Passwords do not match');
+      isValid = false;
     } else {
       setNewPasswordError('');
     }
 
-    if (password && password.length >= 6 && newPassword) {
+    if (!isValid) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await resetPassword({
+        resetToken: props.route?.params?.resetToken,
+        newPassword: password,
+      });
+
       props.navigation.navigate('CongratulationScreen');
+    } catch (error: any) {
+      Alert.alert('Reset failed', error?.message || 'Something went wrong while resetting password.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <SafeAreaView style={styels.container}>
+    <SafeAreaView style={[styels.container, { backgroundColor: colors.background }]}>
       <View>
         <TouchableOpacity onPress={() => props.navigation.navigate("OTPScreen")}>
           <Image source={require('../../assets/png/backAerro.png')} />
         </TouchableOpacity>
-        <Text style={styels.title}>Reset{'\n'}Password</Text>
+        <Text style={[styels.title, { color: colors.text }]}>Reset{'\n'}Password</Text>
 
-        <Text style={styels.passText}>New Password</Text>
-        <View style={styels.inputBox}>
+        <Text style={[styels.passText, { color: colors.mutedText }]}>New Password</Text>
+        <View style={[styels.inputBox, { backgroundColor: colors.surface, borderColor: colors.inputBorder }]}>
           <TextInput
-            style={styels.input}
+            style={[styels.input, { color: colors.text }]}
             placeholder=""
-            placeholderTextColor={'#000'}
+            placeholderTextColor={colors.mutedText}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!Show}
@@ -63,7 +93,7 @@ const ResetPassword = (props: any) => {
             style={{ alignItems: 'center' }}
           >
             <Image
-              style={styels.eye}
+              style={[styels.eye, { tintColor: colors.icon }]}
               source={
                 Show
                   ? require('../../assets/png/visibility.png')
@@ -74,12 +104,12 @@ const ResetPassword = (props: any) => {
         </View>
         <Text style={styels.erroetext}>{passwordError}</Text>
 
-        <Text style={styels.passText}>Confirm new password</Text>
-        <View style={styels.inputBox}>
+        <Text style={[styels.passText, { color: colors.mutedText }]}>Confirm new password</Text>
+        <View style={[styels.inputBox, { backgroundColor: colors.surface, borderColor: colors.inputBorder }]}>
           <TextInput
-            style={styels.input}
+            style={[styels.input, { color: colors.text }]}
             placeholder=""
-            placeholderTextColor={'#000'}
+            placeholderTextColor={colors.mutedText}
             value={newPassword}
             onChangeText={setNewPassword}
             secureTextEntry={!show}
@@ -89,7 +119,7 @@ const ResetPassword = (props: any) => {
             style={{ alignItems: 'center' }}
           >
             <Image
-              style={styels.eye}
+              style={[styels.eye, { tintColor: colors.icon }]}
               source={
                 show
                   ? require('../../assets/png/visibility.png')
@@ -101,8 +131,12 @@ const ResetPassword = (props: any) => {
         <Text style={styels.erroetext}>{newPasswordError}</Text>
       </View>
       <View>
-        <TouchableOpacity style={styels.SubmitTouchable} onPress={handelreset}>
-          <Text style={styels.SubmitText}>Submit</Text>
+        <TouchableOpacity style={[styels.SubmitTouchable, isSubmitting && styels.disabledBtn]} onPress={handelreset} disabled={isSubmitting}>
+          {isSubmitting ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styels.SubmitText}>Submit</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -150,6 +184,9 @@ const styels = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginTop: 20,
+  },
+  disabledBtn: {
+    opacity: 0.7,
   },
   SubmitText: {
     color: '#fff',

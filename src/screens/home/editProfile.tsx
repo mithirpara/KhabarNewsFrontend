@@ -24,6 +24,7 @@ import auth from '@react-native-firebase/auth';
 import { updateProfile } from '../../redux/Slices/editProfileSlice';
 import { updateProfileData } from '../../redux/Slices/profileSlice';
 import { saveProfile } from '../../services/profileApi';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 type FormErrors = {
   username: string;
@@ -35,6 +36,7 @@ type FormErrors = {
 };
 
 const EditProfile = (props: any) => {
+  const { colors } = useAppTheme();
   const editData = useSelector((state: any) => state.editProfile);
   const profileData = useSelector((state: any) => state.profile);
   const authData = useSelector((state: any) => state.auth);
@@ -312,7 +314,7 @@ const EditProfile = (props: any) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -320,14 +322,14 @@ const EditProfile = (props: any) => {
         <View>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => props.navigation.goBack()}>
-              <Image source={require('../../assets/png/Wrong.png')} />
+              <Image source={require('../../assets/png/Wrong.png')} style={{ tintColor: colors.icon }} />
             </TouchableOpacity>
-            <Text>Edit Profile</Text>
+            <Text style={{ color: colors.text }}>Edit Profile</Text>
             <TouchableOpacity onPress={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? (
                 <ActivityIndicator color="#1877F2" />
               ) : (
-                <Image source={require('../../assets/png/right.png')} />
+                <Image source={require('../../assets/png/right.png')} style={{ tintColor: colors.icon }} />
               )}
             </TouchableOpacity>
           </View>
@@ -341,62 +343,62 @@ const EditProfile = (props: any) => {
               </View>
             </View>
             <View style={{ gap: 5, marginTop: 20, marginBottom: 50 }}>
-              <Text style={styles.title}>Username</Text>
+              <Text style={[styles.title, { color: colors.mutedText }]}>Username</Text>
               <TextInput
                 placeholder=""
-                placeholderTextColor={'#4E4B66'}
-                style={styles.textInput}
+                placeholderTextColor={colors.mutedText}
+                style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
                 value={username}
                 onChangeText={setUsername}
               />
               {error.username ? <Text style={styles.error}>{error.username}</Text> : null}
 
-              <Text style={styles.title}>Full Name</Text>
+              <Text style={[styles.title, { color: colors.mutedText }]}>Full Name</Text>
               <TextInput
                 placeholder=""
-                placeholderTextColor={'#4E4B66'}
-                style={styles.textInput}
+                placeholderTextColor={colors.mutedText}
+                style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
                 value={fullName}
                 onChangeText={setFullName}
               />
               {error.fullName ? <Text style={styles.error}>{error.fullName}</Text> : null}
 
-              <Text style={styles.title}>Email Address</Text>
+              <Text style={[styles.title, { color: colors.mutedText }]}>Email Address</Text>
               <TextInput
                 placeholder=""
-                placeholderTextColor={'#4E4B66'}
-                style={styles.textInput}
+                placeholderTextColor={colors.mutedText}
+                style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
                 value={email}
                 onChangeText={setEmail}
               />
               {error.email ? <Text style={styles.error}>{error.email}</Text> : null}
 
-              <Text style={styles.title}>Phone Number</Text>
+              <Text style={[styles.title, { color: colors.mutedText }]}>Phone Number</Text>
               <TextInput
                 placeholder=""
-                placeholderTextColor={'#4E4B66'}
+                placeholderTextColor={colors.mutedText}
                 keyboardType="phone-pad"
-                style={styles.textInput}
+                style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
               />
               {error.phoneNumber ? <Text style={styles.error}>{error.phoneNumber}</Text> : null}
 
-              <Text style={styles.title}>Bio</Text>
+              <Text style={[styles.title, { color: colors.mutedText }]}>Bio</Text>
               <TextInput
                 placeholder=""
-                placeholderTextColor={'#4E4B66'}
-                style={styles.textInput}
+                placeholderTextColor={colors.mutedText}
+                style={[styles.textInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
                 value={bio}
                 onChangeText={setBio}
               />
               {error.bio ? <Text style={styles.error}>{error.bio}</Text> : null}
 
-              <Text style={styles.title}>Website</Text>
+              <Text style={[styles.title, { color: colors.mutedText }]}>Website</Text>
               <TextInput
                 placeholder=""
-                placeholderTextColor={'#4E4B66'}
-                style={styles.website}
+                placeholderTextColor={colors.mutedText}
+                style={[styles.website, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
                 value={website}
                 onChangeText={setWebsite}
               />
@@ -408,13 +410,13 @@ const EditProfile = (props: any) => {
       <Modal transparent visible={visible} animationType="slide">
         <TouchableWithoutFeedback onPress={() => setVisible(false)}>
           <View style={styles.overlay}>
-            <View style={styles.box}>
+            <View style={[styles.box, { backgroundColor: colors.surface }]}>
               <TouchableOpacity onPress={openCamera}>
-                <Text style={styles.option}>Camera</Text>
+                <Text style={[styles.option, { color: colors.text }]}>Camera</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={openGallery} style={{ marginBottom: 30 }}>
-                <Text style={styles.option}>Gallery</Text>
+                <Text style={[styles.option, { color: colors.text }]}>Gallery</Text>
               </TouchableOpacity>
 
               <TouchableOpacity onPress={() => setVisible(false)} style={styles.cancle}>

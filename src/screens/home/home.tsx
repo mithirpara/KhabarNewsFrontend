@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -10,6 +9,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { API_BASE_URL } from '../../config/api';
+import { useAppTheme } from '../../hooks/useAppTheme';
+import RemoteImage from '../../component/RemoteImage';
 
 const categories = [
   'All',
@@ -24,12 +26,10 @@ const categories = [
   'Technology',
 ];
 
-const API_BASE_URL = 'http://10.0.2.2:5000/api';
-
 const getTrendingEndpoint = (category = 'All') =>
   category === 'All'
-    ? `${API_BASE_URL}/trending?limit=10`
-    : `${API_BASE_URL}/trending/${encodeURIComponent(
+    ? `${API_BASE_URL}/api/trending?limit=10`
+    : `${API_BASE_URL}/api/trending/${encodeURIComponent(
         category.toLowerCase(),
       )}?limit=10`;
 
@@ -93,20 +93,14 @@ const newsData = [
 ];
 
 const newsImageFallback = require('../../assets/png/NewsImages.png');
+const logoImageFallback = require('../../assets/png/BCClogo.png');
 
-const RemoteNewsImage = ({ uri, style }: any) => {
-  const [hasError, setHasError] = useState(false);
-
-  return (
-    <Image
-      source={hasError || !uri ? newsImageFallback : { uri }}
-      style={style}
-      onError={() => setHasError(true)}
-    />
-  );
-};
+const getImageUri = (item: any) => item?.image || item?.imageUrl || item?.urlToImage || item?.image1 || '';
+const getLogoUri = (item: any) => item?.newsLogo || item?.newsLogoUrl || item?.image2 || '';
+const latestHeaderItem = { id: 'latest-header', type: 'latest-header' };
 
 const HomeScreen = (props: any) => {
+  const { colors } = useAppTheme();
   const [active, setActive] = useState('All');
   const [trendingData, setTrendingData] = useState<any[]>([]);
   const [latestData, setLatestData] = useState<any[]>([]);
@@ -154,14 +148,63 @@ const HomeScreen = (props: any) => {
 
   const trendingItem = trendingData[0];
 
-  const renderItem = ({ item }: any) => (
-    <View style={styles.card}>
-      <RemoteNewsImage uri={item.image} style={styles.image} />
+  const openDetails = (item: any) => {
+    props.navigation.navigate('DetailsScreen', {
+      article: item,
+      articleId: item.articleId || item.id,
+    });
+  };
+
+  function renderLatestHeader() {
+    return (
+      <View style={[styles.stickyLatestHeader, { backgroundColor: colors.background }]}>
+        <View style={styles.TerndingView}>
+          <Text style={[styles.Trendingtext, { color: colors.text }]}>Latest</Text>
+          <Text style={[styles.seeAlltext, { color: colors.mutedText }]}>See all</Text>
+        </View>
+        <View style={{ marginTop: 10, backgroundColor: colors.background }}>
+          <FlatList
+            data={categories}
+            horizontal
+            keyExtractor={item => item}
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoryList}
+            contentContainerStyle={styles.categoryListContent}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => handleCategory(item)}
+                style={styles.tab}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.text, { color: colors.mutedText }, active === item && styles.activeText]}>
+                  {item}
+                </Text>
+
+                {active === item && <View style={styles.underline} />}
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+        {latestLoading && <Text style={[styles.loadingText, { color: colors.mutedText }]}>Loading...</Text>}
+        {!latestLoading && latestData.length === 0 && (
+          <Text style={[styles.loadingText, { color: colors.mutedText }]}>No news found</Text>
+        )}
+      </View>
+    );
+  }
+
+  const renderItem = ({ item }: any) => item.type === 'latest-header' ? renderLatestHeader() : (
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor: colors.background }]}
+      activeOpacity={0.85}
+      onPress={() => openDetails(item)}
+    >
+      <RemoteImage uri={getImageUri(item)} fallbackSource={newsImageFallback} style={styles.image} />
 
       <View style={styles.content}>
-        <Text style={styles.category}>{item.category}</Text>
+        <Text style={[styles.category, { color: colors.mutedText }]}>{item.category}</Text>
 
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
           {item.title}
         </Text>
         <View
@@ -172,19 +215,20 @@ const HomeScreen = (props: any) => {
           }}
         >
           <View style={styles.bottomRow}>
-            <Image
-              source={{ uri: item.newsLogo }}
+            <RemoteImage
+              uri={getLogoUri(item)}
+              fallbackSource={logoImageFallback}
               style={{ width: 24, height: 24, borderRadius: 12 }}
             />
             <Text style={styles.source}>{item.source}</Text>
-            <Text style={styles.time}> ⏱ {item.time}</Text>
+            <Text style={[styles.time, { color: colors.mutedText }]}> ⏱ {item.time}</Text>
           </View>
           <TouchableOpacity style={{ marginTop: 6 }}>
-            <Image source={require('../../assets/png/dots.png')} />
+            <Image source={require('../../assets/png/dots.png')} style={{ tintColor: colors.icon }} />
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const handleCategory = (category: string) => {
@@ -192,9 +236,96 @@ const HomeScreen = (props: any) => {
     getLatestNews(category);
   };
 
+  const renderListHeader = () => (
+    <>
+      <TouchableOpacity
+        onPress={() => props.navigation.navigate('SearchScreen')}
+      >
+        <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderColor: colors.inputBorder }]}>
+          <Image source={require('../../assets/png/search.png')} style={{ tintColor: colors.icon }} />
+          <View style={styles.input} />
+
+          <Image source={require('../../assets/png/options.png')} style={{ tintColor: colors.icon }} />
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.terndingView}>
+        <Text style={[styles.Trendingtext, { color: colors.text }]}>Trending</Text>
+        <TouchableOpacity
+          onPress={() => props.navigation.navigate('TerndingScreen')}
+        >
+          <Text style={[styles.seeAlltext, { color: colors.mutedText }]}>See all</Text>
+        </TouchableOpacity>
+      </View>
+      {trendingItem && (
+        <TouchableOpacity activeOpacity={0.85} onPress={() => openDetails(trendingItem)}>
+          <View style={{ alignItems: 'center', marginTop: 5 }}>
+            <RemoteImage
+              uri={getImageUri(trendingItem)}
+              fallbackSource={newsImageFallback}
+              style={{ width: '100%', height: 200, borderRadius: 10 }}
+            />
+          </View>
+          <View style={{ backgroundColor: colors.background }}>
+            <Text
+              style={{ color: colors.mutedText, fontWeight: '400', marginTop: 5 }}
+            >
+              {trendingItem.category}
+            </Text>
+
+            <Text
+              style={{ color: colors.text, fontWeight: '400', marginTop: 5 }}
+            >
+              {trendingItem.title}
+            </Text>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+              >
+                <RemoteImage
+                  uri={getLogoUri(trendingItem)}
+                  fallbackSource={logoImageFallback}
+                  style={{ width: 24, height: 24, borderRadius: 12 }}
+                />
+
+                <Text
+                  style={{
+                    marginRight: 15,
+                    color: colors.mutedText,
+                    fontWeight: '600',
+                  }}
+                >
+                  {trendingItem.source}
+                </Text>
+
+                <Image source={require('../../assets/png/clock.png')} style={{ tintColor: colors.icon }} />
+
+                <Text
+                  style={{ width: 60, color: colors.mutedText, fontWeight: '400' }}
+                >
+                  {trendingItem.time}
+                </Text>
+              </View>
+
+              <Image source={require('../../assets/png/dots.png')} style={{ tintColor: colors.icon }} />
+            </View>
+          </View>
+        </TouchableOpacity>
+      )}
+
+    </>
+  );
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.mainView}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.mainView, { backgroundColor: colors.background }]}>
         <View style={styles.imageView}>
           <Image
             source={require('../../assets/png/logoKhabar.png')}
@@ -205,127 +336,23 @@ const HomeScreen = (props: any) => {
           >
             <Image
               source={require('../../assets/png/notification.png')}
-              style={{ height: 24, width: 24 }}
+              style={{ height: 24, width: 24, tintColor: colors.icon }}
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          onPress={() => props.navigation.navigate('SearchScreen')}
-        >
-          <View style={styles.inputContainer}>
-            <Image source={require('../../assets/png/search.png')} />
-            <View style={styles.input} />
-
-            <Image source={require('../../assets/png/options.png')} />
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.terndingView}>
-          <Text style={styles.Trendingtext}>Trending</Text>
-          <TouchableOpacity
-            onPress={() => props.navigation.navigate('TerndingScreen')}
-          >
-            <Text style={styles.seeAlltext}>See all</Text>
-          </TouchableOpacity>
-        </View>
-        {trendingItem && (
-          <View>
-            {' '}
-            <View style={{ alignItems: 'center', marginTop: 5 }}>
-              <RemoteNewsImage
-                uri={trendingItem.image}
-                style={{ width: '100%', height: 200, borderRadius: 10 }}
-              />
-            </View>
-            <View>
-              <Text
-                style={{ color: '#4E4B66', fontWeight: '400', marginTop: 5 }}
-              >
-                {trendingItem.category}
-              </Text>
-
-              <Text
-                style={{ color: '#000000', fontWeight: '400', marginTop: 5 }}
-              >
-                {trendingItem.title}
-              </Text>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-                >
-                  <Image
-                    source={{ uri: trendingItem.newsLogo }}
-                    style={{ width: 24, height: 24, borderRadius: 12 }}
-                  />
-
-                  <Text
-                    style={{
-                      marginRight: 15,
-                      color: '#4E4B66',
-                      fontWeight: '600',
-                    }}
-                  >
-                    {trendingItem.source}
-                  </Text>
-
-                  <Image source={require('../../assets/png/clock.png')} />
-
-                  <Text
-                    style={{ width: 50, color: '#4E4B66', fontWeight: '400' }}
-                  >
-                    {trendingItem.time}
-                  </Text>
-                </View>
-
-                <Image source={require('../../assets/png/dots.png')} />
-              </View>
-            </View>
-          </View>
-        )}
-      <View style={styles.TerndingView}>
-        <Text style={styles.Trendingtext}>Latest</Text>
-        <Text style={styles.seeAlltext}>See all</Text>
-      </View>
-      <View style={{ marginTop: 10 }}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scroll}
-        >
-          {categories.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => handleCategory(item)}
-              style={styles.tab}
-            >
-              <Text style={[styles.text, active === item && styles.activeText]}>
-                {item}
-              </Text>
-
-              {active === item && <View style={styles.underline} />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-      <View style={{ flex: 1 }}>
-        {latestLoading && <Text style={styles.loadingText}>Loading...</Text>}
-        {!latestLoading && latestData.length === 0 && (
-          <Text style={styles.loadingText}>No news found</Text>
-        )}
         <FlatList
-          data={latestData}
-          keyExtractor={item => item.id}
+          data={[latestHeaderItem, ...latestData]}
+          keyExtractor={item => String(item.articleId || item.id)}
           renderItem={renderItem}
+          ListHeaderComponent={renderListHeader}
+          stickyHeaderIndices={[1]}
           showsVerticalScrollIndicator={false}
+          style={{ backgroundColor: colors.background }}
+          contentContainerStyle={[
+            styles.newsListContent,
+            { backgroundColor: colors.background },
+          ]}
         />
-      </View>
       </View>
     </SafeAreaView>
   );
@@ -385,8 +412,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
   },
-  scroll: {
+  stickyLatestHeader: {
+    backgroundColor: '#fff',
+    paddingBottom: 4,
+  },
+  categoryList: {
+    flexGrow: 0,
+  },
+  
+  categoryListContent: {
     paddingHorizontal: 10,
+    paddingRight: 20,
   },
 
   tab: {
@@ -455,6 +491,9 @@ const styles = StyleSheet.create({
     color: '#4E4B66',
     marginHorizontal: 15,
     marginVertical: 10,
+  },
+  newsListContent: {
+    paddingBottom: 15,
   },
 
   source: {

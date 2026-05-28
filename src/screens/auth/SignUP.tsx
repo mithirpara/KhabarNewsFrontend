@@ -15,8 +15,11 @@ import CheckBox from '../../component/CheckBox';
 import { setAuthUser } from '../../redux/Slices/authSlice';
 import { signupUser } from '../../services/authApi';
 import { saveAuthUser } from '../../services/authStorage';
+import { useAppTheme } from '../../hooks/useAppTheme';
+import { registerPushToken } from '../../services/pushNotificationService';
 
 const SignUp = (props: any) => {
+  const { colors } = useAppTheme();
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -76,6 +79,9 @@ const SignUp = (props: any) => {
 
       await saveAuthUser(authUser);
       dispatch(setAuthUser(authUser));
+      registerPushToken(authUser.userId).catch(error => {
+        console.log('Push token registration failed:', error?.message || error);
+      });
 
       props.navigation.reset({
         index: 0,
@@ -89,29 +95,29 @@ const SignUp = (props: any) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View>
         <Text style={styles.subtitle}>Hello!</Text>
-        <Text style={styles.welcomeBack}>Signup to get started</Text>
+        <Text style={[styles.welcomeBack, { color: colors.mutedText }]}>Signup to get started</Text>
 
         <View style={{ marginTop: 50 }}>
-          <Text>Username</Text>
+          <Text style={{ color: colors.text }}>Username</Text>
           <TextInput
-            style={styles.textinput}
+            style={[styles.textinput, { color: colors.text, borderColor: colors.inputBorder, backgroundColor: colors.surface }]}
             placeholder="Enter email"
-            placeholderTextColor={'#000'}
+            placeholderTextColor={colors.mutedText}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
           />
           <Text style={{ color: '#C30052', fontSize: 12 }}>{emailError}</Text>
-          <Text style={{ marginTop: 15 }}>Password</Text>
-          <View style={styles.inputBox}>
+          <Text style={{ marginTop: 15, color: colors.text }}>Password</Text>
+          <View style={[styles.inputBox, { borderColor: colors.inputBorder, backgroundColor: colors.surface }]}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
               placeholder="Enter password"
-              placeholderTextColor={'#000'}
+              placeholderTextColor={colors.mutedText}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!isHide}
@@ -121,7 +127,7 @@ const SignUp = (props: any) => {
               style={{ alignItems: 'center' }}
             >
               <Image
-                style={styles.eye}
+                style={[styles.eye, { tintColor: colors.icon }]}
                 source={
                   isHide
                     ? require('../../assets/png/visibility.png')
@@ -157,14 +163,14 @@ const SignUp = (props: any) => {
               )}
             </TouchableOpacity>
           </View>
-          <Text style={styles.orContinue}>or continue with</Text>
+          <Text style={[styles.orContinue, { color: colors.mutedText }]}>or continue with</Text>
           <View
             style={{ flexDirection: 'row', justifyContent: 'space-around' }}
           >
             <TouchableOpacity
               style={{
                 borderWidth: 1,
-                borderColor: '#ccc',
+                borderColor: colors.border,
                 padding: 10,
                 borderRadius: 8,
                 marginTop: 20,
@@ -177,7 +183,7 @@ const SignUp = (props: any) => {
                   source={require('../../assets/png/Facebook.png')}
                   style={{ width: 20, height: 20 }}
                 />
-                <Text style={{ marginLeft: 10, color: '#667080' }}>
+                <Text style={{ marginLeft: 10, color: colors.mutedText }}>
                   Facebook
                 </Text>
               </View>
@@ -185,7 +191,7 @@ const SignUp = (props: any) => {
             <TouchableOpacity
               style={{
                 borderWidth: 1,
-                borderColor: '#ccc',
+                borderColor: colors.border,
                 padding: 10,
                 borderRadius: 8,
                 marginTop: 20,
@@ -198,7 +204,7 @@ const SignUp = (props: any) => {
                   source={require('../../assets/png/google.png')}
                   style={{ width: 20, height: 20 }}
                 />
-                <Text style={{ marginLeft: 10, width: 50, color: '#667080' }}>
+                <Text style={{ marginLeft: 10, width: 50, color: colors.mutedText }}>
                   Google
                 </Text>
               </View>
@@ -211,7 +217,7 @@ const SignUp = (props: any) => {
               marginTop: 30,
             }}
           >
-            <Text style={{ color: '#667080',width:150 }}>
+            <Text style={{ color: colors.mutedText,width:150 }}>
               don't have an account ?
             </Text>
             <TouchableOpacity

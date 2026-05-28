@@ -11,11 +11,19 @@ import OTPScreen from '../screens/auth/OTP';
 import ResetPasswordScreen from '../screens/auth/ResetPassword';
 import CongratulationScreen from '../screens/auth/Congratulation';
 import TabNavigation from './TabNavigation';
+import { useAppTheme } from '../hooks/useAppTheme';
 const Stack = createNativeStackNavigator();
 
 const MainStack = () => {
+  const { colors } = useAppTheme();
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.background },
+      }}
+    >
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
       <Stack.Screen name="BannerScreen1" component={BannerScreen1} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />

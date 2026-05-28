@@ -4,6 +4,7 @@ import commentReducer from '../../src/redux/Slices/commentSlices';
 import profileReducer from '../../src/redux/Slices/profileSlice';
 import editProfileReducer from '../redux/Slices/editProfileSlice';
 import authReducer from '../redux/Slices/authSlice';
+import themeReducer from '../redux/Slices/themeSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     profile: profileReducer,
     editProfile: editProfileReducer,
     auth: authReducer,
+    theme: themeReducer,
   },
 });

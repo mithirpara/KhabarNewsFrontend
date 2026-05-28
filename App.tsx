@@ -3,12 +3,33 @@ import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import MainStack from './src/navigation/MainNavigation';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './src/redux/store';
 import { updateProfileData } from './src/redux/Slices/profileSlice';
 import { getProfile } from './src/services/profileApi';
+import { getThemeColors } from './src/constants/theme';
+import { getSavedThemeMode } from './src/services/themeStorage';
+import { setThemeMode } from './src/redux/Slices/themeSlice';
+import {
+  listenForForegroundNotifications,
+  listenForPushTokenRefresh,
+  registerPushToken,
+} from './src/services/pushNotificationService';
 
 const AppBootstrap = () => {
+  const dispatch = useDispatch();
+  const themeMode = useSelector((state: any) => state.theme.mode);
+  const colors = getThemeColors(themeMode);
+
+  useEffect(() => {
+    const loadTheme = async () => {
+      const savedThemeMode = await getSavedThemeMode();
+      dispatch(setThemeMode(savedThemeMode));
+    };
+
+    loadTheme();
+  }, [dispatch]);
+
   useEffect(() => {
     const unsubscribe = auth().onAuthStateChanged(async user => {
       if (!user?.uid) {
@@ -37,14 +58,39 @@ const AppBootstrap = () => {
           console.log('Profile bootstrap failed:', error?.message || error);
         }
       }
+
+      try {
+        await registerPushToken(user.uid);
+      } catch (error: any) {
+        console.log('Push token registration failed:', error?.message || error);
+      }
     });
 
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    registerPushToken().catch((error: any) => {
+      console.log('Saved user push token registration failed:', error?.message || error);
+    });
+  }, []);
+
+  useEffect(() => {
+    const unsubscribeTokenRefresh = listenForPushTokenRefresh();
+    const unsubscribeForeground = listenForForegroundNotifications();
+
+    return () => {
+      unsubscribeTokenRefresh();
+      unsubscribeForeground();
+    };
+  }, []);
+
   return (
     <NavigationContainer>
-      <StatusBar barStyle="dark-content" backgroundColor="#F2F2F2" />
+      <StatusBar
+        barStyle={themeMode === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.statusBar}
+      />
       <MainStack />
     </NavigationContainer>
   );

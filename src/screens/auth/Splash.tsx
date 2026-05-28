@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { setAuthUser } from '../../redux/Slices/authSlice';
 import { getSavedAuthUser } from '../../services/authStorage';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 const SplashScreen = ({ navigation }: any) => {
+  const { colors } = useAppTheme();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -35,7 +37,7 @@ const SplashScreen = ({ navigation }: any) => {
   }, [dispatch, navigation]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.logoWrapper}>
         <Image source={require('../../assets/png/Frame.png')} />
         <ActivityIndicator color="#2563eb" style={styles.loader} />

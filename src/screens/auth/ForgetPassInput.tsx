@@ -1,15 +1,60 @@
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAppTheme } from '../../hooks/useAppTheme';
+import { requestPasswordReset } from '../../services/authApi';
 
 const ForgetPassInputScreen = (props:any) => {
-  const [email, setEmail] = useState('');
-  const [emailErr, setEmailErr] = useState('');
+  const { colors } = useAppTheme();
+  const [identifier, setIdentifier] = useState('');
+  const [identifierErr, setIdentifierErr] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-  const handelsubmit = () => {
-  } 
+  const handelsubmit = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    const trimmedIdentifier = identifier.trim();
+
+    if (!trimmedIdentifier) {
+      setIdentifierErr('Email is required');
+      return;
+    }
+
+    if (!emailRegex.test(trimmedIdentifier)) {
+      setIdentifierErr('Please enter a valid email address');
+      return;
+    }
+
+    setIdentifierErr('');
+
+    try {
+      setIsSubmitting(true);
+      const response = await requestPasswordReset({
+        identifier: trimmedIdentifier,
+        channel: 'email',
+      });
+
+      const data = response?.data || {};
+
+      props.navigation.navigate('OTPScreen', {
+        requestId: data.requestId,
+        identifier: data.destination || trimmedIdentifier,
+        channel: 'email',
+        expiresInSeconds: data.expiresInSeconds,
+        devOtp: data.devOtp,
+      });
+    } catch (error: any) {
+      Alert.alert('OTP failed', error?.message || 'Something went wrong while sending OTP.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.mainView}>
         <TouchableOpacity onPress={() => props.navigation.goBack("ForgotPasswordScreen")}>
         <Image
@@ -17,21 +62,30 @@ const ForgetPassInputScreen = (props:any) => {
           style={styles.image}
         />
 </TouchableOpacity>
-        <Text style={styles.title}>Forgot{'\n'}Password ?</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Forgot{'\n'}Password ?</Text>
 
-        <Text style={styles.subtitle}>
+        <Text style={[styles.subtitle, { color: colors.mutedText }]}>
           Don’t worry! it happens. Please enter the{'\n'}address associated with
           your account.
         </Text>
-        <Text style={{ marginTop: 15,color:"#4E4B66",fontWeight:"400" }}>Email ID / Mobile number</Text>
+        <Text style={{ marginTop: 15,color: colors.mutedText,fontWeight:"400" }}>Email ID</Text>
         <TextInput
-          style={styles.textInput}
+          style={[styles.textInput, { color: colors.text, borderColor: colors.inputBorder, backgroundColor: colors.surface }]}
           placeholder=''
-          placeholderTextColor={"#000"}
+          placeholderTextColor={colors.mutedText}
+          value={identifier}
+          onChangeText={setIdentifier}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
+        <Text style={styles.errorText}>{identifierErr}</Text>
       
-        <TouchableOpacity style={styles.button} onPress={() => props.navigation.navigate("OTPScreen")}>
-          <Text style={styles.btnText}>Submit</Text>
+        <TouchableOpacity style={[styles.button, isSubmitting && styles.disabledBtn]} onPress={handelsubmit} disabled={isSubmitting}>
+          {isSubmitting ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.btnText}>Submit</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -77,6 +131,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginVertical:450,
+  },
+  disabledBtn: {
+    opacity: 0.7,
+  },
+  errorText: {
+    color: '#C30052',
+    fontSize: 12,
+    marginTop: 4,
   },
    btnText: {
     color: '#fff',

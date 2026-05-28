@@ -7,15 +7,17 @@ import {
   StatusBar,
   Image,
 } from 'react-native';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 const Congratulation = ({ navigation }: any) => {
+  const { colors } = useAppTheme();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
 
       <View style={styles.logoContainer}>
         <Image source={require("../../assets/png/logoKhabar.png")}/>
-        <Text style={styles.title}>Congratulations!</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: colors.text }]}>Congratulations!</Text>
+        <Text style={[styles.subtitle, { color: colors.mutedText }]}>
           Your account is ready to use
         </Text>
       </View>

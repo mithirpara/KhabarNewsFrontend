@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
+  ImageSourcePropType,
   StyleSheet,
   Text,
   TextInput,
@@ -9,47 +10,125 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
-import { setSearchText } from '../../redux/Slices/newcSlices';
+import { useFocusEffect } from '@react-navigation/native';
+import { API_BASE_URL } from '../../config/api';
+import { useSelector } from 'react-redux';
+import { getThemeColors } from '../../constants/theme';
 
-const Bookmark = (props:any) => {
-  const dispatch = useDispatch();
+type BookmarkItem = {
+  id: string;
+  articleId?: string;
+  bookmarkId?: string;
+  category: string;
+  title: string;
+  source: string;
+  time: string;
+  image?: string;
+  image1?: string | ImageSourcePropType;
+  image2?: string | ImageSourcePropType;
+};
 
-  const newsList = useSelector(state => state.news.newsList);
-  const searchText = useSelector(state => state.news.searchText);
+const getImageSource = (
+  image?: string | ImageSourcePropType,
+  fallback?: ImageSourcePropType,
+) => {
+  if (!image) {
+    return fallback;
+  }
 
-  const filteredNews = newsList.filter(item =>
-    item.category.toLowerCase().includes(searchText.toLowerCase()),
+  return typeof image === 'string' ? { uri: image } : image;
+};
+
+const Bookmark = (props: any) => {
+  const themeMode = useSelector((state: any) => state.theme.mode);
+  const colors = getThemeColors(themeMode);
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
+  const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const loadBookmarks = useCallback(async (queryText = searchText) => {
+    try {
+      setLoading(true);
+      const query = queryText.trim();
+      const url = query
+        ? `${API_BASE_URL}/api/bookmarks?q=${encodeURIComponent(query)}`
+        : `${API_BASE_URL}/api/bookmarks`;
+      const response = await fetch(url);
+      const json = await response.json();
+
+      setBookmarks(Array.isArray(json?.data) ? json.data : []);
+    } catch (error) {
+      console.warn('Failed to fetch bookmarks', error);
+      setBookmarks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchText]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadBookmarks(searchText);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [loadBookmarks, searchText]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadBookmarks();
+    }, [loadBookmarks]),
   );
-  return (
-    <SafeAreaView style={styles.container}>
-      <View>
-        <Text style={styles.headertext}>Bookmark</Text>
 
-        <View style={styles.inputContainer}>
-          <Image source={require('../../assets/png/search.png')} />
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.contentWrapper}>
+        <Text style={[styles.headertext, { color: colors.text }]}>Bookmark</Text>
+
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.inputBorder,
+            },
+          ]}
+        >
+          <Image source={require('../../assets/png/search.png')} style={{ tintColor: colors.icon }} />
 
           <TextInput
             placeholder="Search"
             value={searchText}
-            onChangeText={text => dispatch(setSearchText(text))}
+            onChangeText={setSearchText}
             placeholderTextColor={'#A0A3BD'}
-            style={styles.input}
+            style={[styles.input, { color: colors.text }]}
           />
           <TouchableOpacity>
-            <Image source={require('../../assets/png/options.png')} />
+            <Image source={require('../../assets/png/options.png')} style={{ tintColor: colors.icon }} />
           </TouchableOpacity>
         </View>
         <FlatList
-          data={filteredNews}
-          keyExtractor={item => item.id}
+          data={bookmarks}
+          keyExtractor={item => item.bookmarkId || item.id}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => props.navigation.navigate("DetailsScreen")}>
-              <View style={styles.card}>
-                <Image source={item.image1} style={styles.image} />
+            <TouchableOpacity
+              onPress={() =>
+                props.navigation.navigate('DetailsScreen', {
+                  article: item,
+                  articleId: item.articleId || item.bookmarkId || item.id,
+                })
+              }
+            >
+              <View style={[styles.card, { backgroundColor: colors.background }]}>
+                <Image
+                  source={getImageSource(
+                    item.image1 || item.image,
+                    require('../../assets/png/News1.png'),
+                  )}
+                  style={styles.image}
+                />
                 <View style={styles.content}>
-                  <Text style={styles.category}>{item.category}</Text>
-                  <Text style={styles.title}>{item.title}</Text>
+                  <Text style={[styles.category, { color: colors.mutedText }]}>{item.category}</Text>
+                  <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -60,20 +139,30 @@ const Bookmark = (props:any) => {
                   >
                     <View style={styles.bottomRow}>
                       <Image
-                        source={item.image2}
+                        source={getImageSource(
+                          item.image2,
+                          require('../../assets/png/BCClogo2.png'),
+                        )}
                         style={{ width: 20, height: 20 }}
                       />
                       <Text style={styles.source}>{item.source}</Text>
-                      <Text style={styles.time}>{item.time}</Text>
+                      <Text style={[styles.time, { color: colors.mutedText }]}>{item.time}</Text>
                     </View>
                     <TouchableOpacity>
-                      <Image source={require('../../assets/png/dots.png')} />
+                      <Image source={require('../../assets/png/dots.png')} style={{ tintColor: colors.icon }} />
                     </TouchableOpacity>
                   </View>
                 </View>
               </View>
             </TouchableOpacity>
           )}
+          ListEmptyComponent={
+            <Text style={[styles.emptyText, { color: colors.mutedText }]}>
+              {loading ? 'Loading...' : 'No bookmark found'}
+            </Text>
+          }
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       </View>
     </SafeAreaView>
@@ -88,6 +177,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 15,
     width: '100%',
+  },
+  contentWrapper: {
+    flex: 1,
   },
   headertext: {
     fontSize: 38,
@@ -157,5 +249,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
     marginLeft: 8,
+  },
+  emptyText: {
+    color: '#888',
+    fontSize: 14,
+    marginTop: 40,
+    textAlign: 'center',
+  },
+  listContent: {
+    paddingBottom: 90,
   },
 });
