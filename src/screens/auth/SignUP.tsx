@@ -210,20 +210,14 @@ const SignUp = (props: any) => {
               </View>
             </TouchableOpacity>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              marginTop: 30,
-            }}
-          >
-            <Text style={{ color: colors.mutedText,width:150 }}>
-              don't have an account ?
+          <View style={styles.accountSwitchRow}>
+            <Text style={[styles.accountText, { color: colors.mutedText }]}>
+              Already have an account?
             </Text>
             <TouchableOpacity
               onPress={() => props.navigation.navigate('LoginScreen')}
             >
-              <Text style={{ color: '#2563eb',width:50 }}>Login</Text>
+              <Text style={styles.loginLinkText}>Login</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -300,5 +294,20 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     color: '#000',
+  },
+  accountSwitchRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  accountText: {
+    color: '#667080',
+    fontSize: 13,
+  },
+  loginLinkText: {
+    color: '#2563eb',
+    fontWeight: '600',
+    marginLeft: 6,
   },
 });
